@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <title>Arena of Creators</title>
+</head>
+
+<body class="pt-16 flex">
+{% include '_nav.html' %}
+
+  <!-- Conteneur principal centré -->
+  <main class="ml-[270px]  mr-[240px] p-4 w-full max-w-2xl mx-auto">
+    {% for post in posts %}
+    <div class="bg-white p-4 rounded-lg shadow mb-6">
+
+      <!-- Image + Nom utilisateur en haut -->
+      <div class="flex items-center gap-4 mb-2">
+        <a href="{% url 'profile' post.author.username %}"><img src="{{ post.author.profile_picture.url }}" alt="Utilisateur" class="w-10 h-10 rounded-full"></a>
+        <h6 class="text-lg font-semibold">{{ post.author.username }}</h6>
+        <!-- Date du post -->
+      <span class="text-sm text-gray-500 block mt-2">{{ post.created_at }}</span>
+      </div>
+
+      <!-- Contenu du post -->
+      <p class="mt-2 text-justify">{{ post.content }}</p>
+
+      <!-- Image du média si elle existe -->
+      {% if post.media %}
+        <img src="{{ post.media.url }}" alt="media" class="mt-4 w-full rounded">
+      {% endif %}
+    <div></div><hr>
+      <!-- Boutons Like et Commentaire -->
+
+      <div class="flex items-center gap-4 mt-2">
+    <button
+  class="like-btn"
+  data-post-id="{{ post.id }}"
+  data-liked="{{ post.is_liked|yesno:'true,false' }}"
+  onclick="toggleLike(this)">
+  ❤️ <span class="like-count">{{ post.likes.count }}</span> Likes
+</button>
+        <button onclick="openCommentModal({{ post.id}})" class="text-blue-500 hover:underline" class="flex items-center gap-1 text-gray-600 hover:text-blue-500">
+          💬 Commenter<span id="commentCount-{{ post.id }}">{{ post.comments.count }}</span>
+        </button>
+      </div>
+
+
+
+    </div>
+    {% endfor %}
+    {% include 'comment.html' %}
+
+
+
+</main>
+{% include 'chatbox.html' %}
+
+
+{% if request.user.is_authenticated %}
+
+<script>
+ let commentSocket = null;  // Déclarée en haut, mais initialisée plus tard
+  const username = "{{ user.username }}"; // Nom d'utilisateur actuel
+
+  function openCommentModal(postId) {
+    console.log("Ouverture du modal");
+    document.getElementById("commentModal").classList.remove("hidden");
+
+    // Nouvelle socket (réinitialisée à chaque ouverture de modal)
+    const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    commentSocket = new WebSocket(`${protocol}://${window.location.host}/ws/comments/${postId}/`);
+
+    // Charger les commentaires existants
+    fetch(`/load_comments/${postId}/`)
+      .then(response => response.json())
+      .then(data => {
+        const commentList = document.getElementById('comment-list');
+        commentList.innerHTML = '';
+        data.comments.forEach(comment => {
+          const commentElement = document.createElement('div');
+          commentElement.classList.add('mb-2', 'flex', 'items-start');
+          commentElement.innerHTML = `
+            <div class="mr-2">
+              <img src="${comment.author_avatar}" class="w-8 h-8 rounded-full" alt="">
+            </div>
+            <div>
+              <p class="text-sm text-gray-700"><strong>${comment.username}</strong> : ${comment.content}</p>
+              <span class="text-xs text-gray-500">${comment.created_at}</span>
+            </div>
+          `;
+          commentList.appendChild(commentElement);
+        });
+      });
+
+    commentSocket.onmessage = function(e) {
+      const data = JSON.parse(e.data);
+      const commentElement = document.createElement('div');
+      commentElement.classList.add('mb-2', 'flex', 'items-start');
+      commentElement.innerHTML = `
+        <div class="mr-2">
+          <img src="${data.author_avatar}" class="w-8 h-8 rounded-full" alt="">
+        </div>
+        <div>
+          <p class="text-sm text-gray-700"><strong>${data.username}</strong> : ${data.comment}</p>
+          <span class="text-xs text-gray-500">${data.created_at}</span>
+        </div>
+      `;
+      const list = document.getElementById('comment-list');
+      list.appendChild(commentElement);
+      list.scrollTop = list.scrollHeight;
+
+      if (data.type === 'new_comment' || data.type === 'history') {
+        updateCommentCount(data.comment_count, data.post_id);
+      }
+    };
+
+    commentSocket.onclose = function(e) {
+      console.error('Le socket de commentaire s\'est fermé de manière inattendue');
+    };
+  }
+
+  function sendComment(e) {
+    e.preventDefault();
+    const input = document.getElementById("commentInput");
+    const comment = input.value.trim();
+    if (comment && commentSocket) {
+      commentSocket.send(JSON.stringify({
+        comment: comment,
+        username: username
+      }));
+      input.value = "";
+    }
+  }
+
+
+
+  // Fonction pour fermer le modal de commentaire
+  function closeModal() {
+    console.log("Fermeture du modal");
+    document.getElementById("commentModal").classList.add("hidden");
+  }
+
+
+//Count le nombre de commentaire
+function updateCommentCount(count, postId) {
+  const commentCountElem = document.getElementById(`commentCount-${postId}`);
+  if (commentCountElem) {
+    commentCountElem.textContent = count;
+  }
+}
+
+//Gestion des likes
+//const postId = ...;  // L’ID du post actuel
+const likeSocket = new WebSocket(`ws://${window.location.host}/ws/likes/${postId}/`);
+
+likeSocket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+
+    // Mettre à jour le nombre de likes pour le post
+    const likeCountElement = document.getElementById(`like-count-${data.post_id}`);
+    if (likeCountElement) {
+        likeCountElement.textContent = data.like_count + ' likes';
+    }
+};
+
+// Fonction pour liker ou unliker un post
+function toggleLike(username, action, postId) {
+    likeSocket.send(JSON.stringify({
+        'action': action,
+        'username': username,
+        'post_id': postId
+    }));
+}
+
+
+function toggleLike(button) {
+  const postId = button.dataset.postId;
+
+  fetch(`/like/${postId}/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': getCSRFToken(),
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    button.dataset.liked = data.liked;
+    button.querySelector('.like-count').textContent = data.like_count;
+  })
+  .catch(error => console.error('Erreur:', error));
+}
+
+function getCSRFToken() {
+  return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+
+
+
+
+
+
+</script>
+{% endif %}
+
+
+
+
+
+</body>
+</html>

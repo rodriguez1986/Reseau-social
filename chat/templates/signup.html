@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscription</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@yaireo/tagify/dist/tagify.css" />
+</head>
+<body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    <nav class="bg-white shadow p-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-blue-600">🎨 Réseau Créatif</h1>
+        <div>
+            <a href="{% url 'connexion' %}" class="text-blue-600 hover:underline mx-2">Connexion</a>
+        </div>
+    </nav>
+
+    <section class="max-w-lg mx-auto bg-white p-8 mt-10 rounded-xl shadow-lg">
+        <h2 class="text-2xl font-semibold text-center mb-6">Inscription</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Nom d'utilisateur -->
+            <div class="mb-4">
+                <label for="username" class="block text-gray-700">Nom d'utilisateur</label>
+                <input type="text" id="username" name="username" class="w-full p-4 mt-2 border border-gray-300 rounded-lg" placeholder="Nom d'utilisateur">
+                {% for error in form.username.errors %}
+                    <p class="text-red-600 text-sm mt-2">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- Email -->
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700">Email</label>
+                <input type="email" id="email" name="email" class="w-full p-4 mt-2 border border-gray-300 rounded-lg" placeholder="Email">
+                {% for error in form.email.errors %}
+                    <p class="text-red-600 text-sm mt-2">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- Mot de passe -->
+            <div class="mb-4">
+                <label for="password1" class="block text-gray-700">Mot de passe</label>
+                <input type="password" id="password1" name="password1" class="w-full p-4 mt-2 border border-gray-300 rounded-lg" placeholder="Mot de passe">
+                {% for error in form.password1.errors %}
+                    <p class="text-red-600 text-sm mt-2">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <div class="mb-4">
+                <label for="password2" class="block text-gray-700">Confirmer le mot de passe</label>
+                <input type="password" id="password2" name="password2" class="w-full p-4 mt-2 border border-gray-300 rounded-lg" placeholder="Confirmer le mot de passe">
+                {% for error in form.password2.errors %}
+                    <p class="text-red-600 text-sm mt-2">{{ error }}</p>
+                {% endfor %}
+            </div>
+
+            <!-- Bio -->
+            <div class="mb-4">
+                <label for="bio" class="block text-gray-700">Bio</label>
+                <textarea id="bio" name="bio" rows="4" class="w-full p-4 mt-2 border border-gray-300 rounded-lg" placeholder="Parle un peu de toi..."></textarea>
+            </div>
+
+            <!-- Photo de profil -->
+            <div class="mb-4">
+                <label for="profile_picture" class="block text-gray-700">Photo de profil</label>
+                <input type="file" id="profile_picture" name="profile_picture" accept="image/*" class="w-full p-2 mt-2 border border-gray-300 rounded-lg">
+                <img id="preview" class="mt-4 hidden rounded-full w-32 h-32 object-cover"/>
+            </div>
+
+            <!-- Intérêts -->
+            <div class="mb-4">
+                <label for="interests" class="block text-gray-700">Centres d’intérêt</label>
+                <input id="interests" name="interests" placeholder="Ex : Musique, IA, Gaming..." class="w-full p-4 mt-2 border border-gray-300 rounded-lg" />
+            </div>
+
+            <!-- Rôles -->
+            <div class="mb-6 space-y-3">
+                <label class="flex items-center">
+                    <input type="checkbox" id="is_artist" name="is_artist" class="mr-2">
+                    <span class="text-gray-700">Je suis un artiste</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" id="is_freelancer" name="is_freelancer" class="mr-2">
+                    <span class="text-gray-700">Je suis un freelance</span>
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" id="is_gamer" name="is_gamer" class="mr-2">
+                    <span class="text-gray-700">Je suis un gamer</span>
+                </label>
+            </div>
+
+            <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700">
+                S'inscrire
+            </button>
+        </form>
+
+        <div class="text-center mt-6">
+            <p>Déjà un compte ? <a href="{% url 'connexion' %}" class="text-blue-600 hover:underline">Se connecter</a></p>
+        </div>
+    </section>
+
+    <!-- Tagify JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@yaireo/tagify"></script>
+    <script>
+        const input = document.querySelector('#interests');
+        new Tagify(input, {
+            whitelist: ["Musique", "Cinéma", "Art", "Design", "Programmation", "Python", "Django", "IA", "Gaming", "Lecture"],
+            dropdown: {
+                maxItems: 10,
+                enabled: 0,
+                closeOnSelect: false
+            }
+        });
+
+        // Aperçu photo de profil
+        const fileInput = document.getElementById('profile_picture');
+        const preview = document.getElementById('preview');
+        fileInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+                preview.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

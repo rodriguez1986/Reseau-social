@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Marketplace</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+{% include '_nav.html' %}
+
+<!-- Conteneur principal centré -->
+<main class="ml-[260px]  mr-[240px] p-4 w-full max-w-2xl mx-auto mt-10">
+<h1 class="text-3xl font-bold mb-4 mt-6 ">Marketplace</h1>
+
+<div class="flex flex-wrap gap-4 mb-6">
+  {% for key, value in services.first.CATEGORY_CHOICES %}
+    <button onclick="filterByCategory('{{ key }}')" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">
+      {{ value }}
+    </button>
+  {% endfor %}
+</div>
+
+<div id="services-list" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  {% for service in services %}
+    <div class="bg-white shadow p-4 rounded">
+      <h2 class="text-xl font-semibold">{{ service.title }}</h2>
+      <p class="text-gray-700">{{ service.description|truncatechars:100 }}</p>
+      <p class="text-blue-600 font-bold">{{ service.price }} €</p>
+      <p class="text-sm text-gray-500">{{ service.get_category_display }}</p>
+    </div>
+  {% endfor %}
+</div>
+ </main>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

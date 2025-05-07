@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<main class="ml-[270px]  mr-[240px] p-4 w-full max-w-2xl mx-auto">
+<!-- Modal pour afficher le post et ses commentaires -->
+<div id="postCommentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex justify-center items-center">
+  <div class="bg-white p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <button onclick="closePostModal()" class="float-right text-gray-600 hover:text-black">X</button>
+    <div id="post-comment-content">
+      <!-- Le contenu du post/commentaires sera injecté ici dynamiquement -->
+    </div>
+  </div>
+</div>
+
+
+</main>
+</body>
+</html>

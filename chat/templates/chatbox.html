@@ -1,0 +1,95 @@
+<!-- Chatbot Floating Widget -->
+<div id="chatbot-widget" class="fixed bottom-4 right-4 w-80 bg-white shadow-xl rounded-2xl overflow-hidden z-50">
+  <!-- Header -->
+  <div class="bg-blue-600 text-white px-4 py-2 flex justify-between items-center">
+    <h4 class="font-semibold">Assistant Virtuel</h4>
+    <button id="close-chatbot" class="text-white">&times;</button>
+  </div>
+
+  <!-- Messages Container -->
+  <div id="chatbot-messages" class="h-64 p-4 overflow-y-auto space-y-2 bg-gray-50 text-sm">
+    <div class="text-gray-500 text-center">Discutons !</div>
+  </div>
+
+  <!-- Input -->
+  <div class="border-t px-3 py-2 bg-white">
+    <div class="flex items-center gap-2">
+      <input id="chatbot-input" type="text" class="w-full border rounded-full px-3 py-1 text-sm focus:outline-none" placeholder="Posez-moi une question...">
+      <button id="send-chatbot" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full">Envoyer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Chatbot Button -->
+<button id="open-chatbot" class="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg z-40">
+  Chatbot
+</button>
+
+<script>
+  const openBtn = document.getElementById("open-chatbot");
+  const closeBtn = document.getElementById("close-chatbot");
+  const widget = document.getElementById("chatbot-widget");
+  const input = document.getElementById("chatbot-input");
+  const sendBtn = document.getElementById("send-chatbot");
+  const messagesContainer = document.getElementById("chatbot-messages");
+
+  // Cacher au début
+  widget.style.display = "none";
+
+  // Ouvrir / Fermer le chat
+  openBtn.addEventListener("click", () => {
+    widget.style.display = "block";
+    openBtn.style.display = "none";
+  });
+
+  closeBtn.addEventListener("click", () => {
+    widget.style.display = "none";
+    openBtn.style.display = "block";
+  });
+
+  // Envoyer un message
+  sendBtn.addEventListener("click", sendMessage);
+  input.addEventListener("keypress", function (e) {
+    if (e.key === "Enter") sendMessage();
+  });
+
+  async function sendMessage() {
+    const message = input.value.trim();
+    if (!message) return;
+
+    appendMessage("Vous", message, "right");
+    input.value = "";
+
+    try {
+      const response = await fetch("/chatbot/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCSRFToken(),
+        },
+        body: JSON.stringify({ message: message }),
+      });
+
+      const data = await response.json();
+      appendMessage("Assistant", data.reply, "left");
+    } catch (error) {
+      appendMessage("Erreur", "Une erreur s'est produite.", "left");
+      console.error(error);
+    }
+  }
+
+  function appendMessage(sender, text, side) {
+    const msg = document.createElement("div");
+    msg.className = `text-${side === "right" ? "right text-blue-600" : "left text-gray-700"}`;
+    msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    messagesContainer.appendChild(msg);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  function getCSRFToken() {
+    const cookieValue = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("csrftoken="));
+    return cookieValue ? cookieValue.split("=")[1] : "";
+  }
+</script>

@@ -1,0 +1,15 @@
+    <h1>Boîte de Réception</h1>
+
+    {% if received_messages %}
+        <ul>
+            {% for message in received_messages %}
+                <li>
+                    <strong>{{ message.sender.username }}</strong>: {{ message.content }}<br>
+                    <small>{{ message.timestamp }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Aucun message reçu.</p>
+    {% endif %}
+{% endblock %}

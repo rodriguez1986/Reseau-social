@@ -1,0 +1,12 @@
+<div id="notificationModal" data-post-id="{{ n.post.id }}" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex justify-center items-center">
+  <div class="bg-white w-96 max-h-[80vh] overflow-y-auto rounded-xl p-4 shadow-lg">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-lg font-semibold">Notifications</h2>
+      <button onclick="closeNotificationModal()" class="text-gray-500 hover:text-red-500">&times;</button>
+    </div>
+    <div id="notification-list" class="space-y-4">
+      <!-- Notifications injectées ici -->
+    </div>
+  </div>
+</div>
+

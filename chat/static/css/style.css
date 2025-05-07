@@ -1,0 +1,7 @@
+
+
+#comment-list {
+  max-height: 200px;  /* Hauteur max pour activer le scroll */
+  overflow-y: auto;   /* Scroll vertical uniquement */
+  padding-right: 10px; /* Un peu d'espace pour ne pas coller le bord */
+}

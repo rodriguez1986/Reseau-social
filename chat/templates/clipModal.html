@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Publication clip de jeu</title>
+</head>
+<body>
+<!-- Modal Publier Clip -->
+<div id="clipModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-lg relative">
+    <button onclick="closeClipModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+
+    <h2 class="text-2xl font-bold mb-6 text-green-600 text-center">Publier un Clip</h2>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="block font-medium">Titre du clip</label>
+        <input type="text" name="clip_title" class="w-full p-2 border rounded" placeholder="Ex: Kill incroyable">
+      </div>
+
+      <div>
+        <label class="block font-medium">Description</label>
+        <textarea name="clip_description" rows="4" class="w-full p-2 border rounded" placeholder="Racontez ce moment..."></textarea>
+      </div>
+
+      <div>
+        <label class="block font-medium">Vidéo du clip</label>
+        <input type="file" name="clip_video" accept="video/*" class="w-full">
+      </div>
+
+      <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded">
+        Publier
+      </button>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

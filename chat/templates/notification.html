@@ -1,0 +1,12 @@
+<h2 class="text-2xl font-bold mb-4">Vos notifications</h2>
+
+<ul class="space-y-4">
+    {% for notification in notifications %}
+        <li class="p-4 rounded shadow {{ 'bg-gray-100' if notification.seen else 'bg-yellow-100' }}">
+            {{ notification.message }}
+            <small class="block text-gray-500">{{ notification.created_at|date:"d/m/Y H:i" }}</small>
+        </li>
+    {% empty %}
+        <li>Aucune notification pour le moment.</li>
+    {% endfor %}
+</ul>

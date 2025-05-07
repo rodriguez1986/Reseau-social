@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Profil</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+{% include '_nav.html' %}
+<main class="ml-[260px]  mr-[240px] p-4 w-full max-w-2xl mx-auto mt-10">
+    <div class="max-w-4xl mx-auto py-10">
+        <div class="bg-white p-6 rounded-xl shadow-md text-center">
+             {% if user.profile_picture %}
+             <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="w-24 h-24 rounded-full mx-auto mb-4">
+            {% else %}
+            <div class="w-24 h-24 bg-gray-300 rounded-full mb-4"></div>
+      {%        endif %}
+            <h1 class="text-2xl font-semibold">{{ user.username }}</h1>
+            <p class="text-gray-600 mt-2">{{ user.bio }}</p>
+            <div class="mt-4">
+                <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm mr-2">{{ user.is_artist|yesno:"🎨 Artiste," }}</span>
+                <span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm mr-2">{{ user.is_freelancer|yesno:"💼 Freelance," }}</span>
+                <span class="inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">{{ user.is_gamer|yesno:"🎮 Gamer," }}</span>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>
