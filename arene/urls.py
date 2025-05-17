@@ -23,6 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('chat.urls'))
 ]
-# Ajouter la gestion des fichiers médias en développement
+# Configuration pour servir les fichiers média en mode DEBUG (développement)
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

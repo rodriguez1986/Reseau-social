@@ -1,5 +1,5 @@
 from django.urls import re_path
-from chat.consumer import ChatConsumer,StatusConsumer,NotificationConsumer
+from chat.consumer import ChatConsumer,NotificationConsumer,StatusConsumer
 from chat.commentConsumers import CommentConsumer, LikeConsumer
 
 

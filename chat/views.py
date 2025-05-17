@@ -11,15 +11,18 @@ from django.contrib.auth import authenticate, login as auth_login,get_user_model
 from django.core.serializers import serialize
 from django.utils.timezone import now
 from django.contrib.auth.forms import AuthenticationForm
+from urllib.parse import urljoin
 from django.contrib import messages
 from django.db.models import Q
 from .forms import CustomUserCreationForm
-import os
+import os,re
+
 import openai
 import json
+import zipfile
+from django.conf import settings
 
 #Fonction qui permet de s'enregistrer ou de creer un compte
-
 def signup(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST, request.FILES)
@@ -77,8 +80,8 @@ def profile(request, username):
 
     return render(request, 'profile.html', {'user': user})
 
-# Envoyer un message
-def send_messages(request):
+# Afficher les messages
+def load_messages(request):
     # Récupère tous les utilisateurs sauf l'utilisateur connecté
     users = CustomUser.objects.exclude(id=request.user.id)
     return render(request, 'send_message.html', {'users': users})
@@ -95,11 +98,12 @@ def inbox(request):
 
 
 #Fonction pour publier un post
+@login_required(login_url='connexion')
 def post(request):
     if request.method == 'POST':
+        print("Form POST reçu")
         content = request.POST.get('content')
         media = request.FILES.get('media')  # image ou vidéo
-
         if content or media:
             posts=Post.objects.create(author=request.user, content=content, media=media)
             return redirect('home')
@@ -193,6 +197,43 @@ def filter_services(request, category):
     }
     return JsonResponse(data)
 
+
+login_required
+def add_service(request):
+    if request.method == "POST":
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        price = request.POST.get("price")
+        category = request.POST.get("category")
+
+        # Validation des données
+        if not title or not description or not price or not category:
+            messages.error(request, "Tous les champs sont obligatoires.")
+            return render(request, "service.html")
+
+        try:
+            price = float(price)
+            if price < 0:
+                messages.error(request, "Le prix ne peut pas être négatif.")
+                return render(request, "service.html")
+        except ValueError:
+            messages.error(request, "Le prix doit être un nombre valide.")
+            return render(request, "service.html")
+
+        # Création du service
+        Service.objects.create(
+            user=request.user,
+            title=title,
+            description=description,
+            price=price,
+            category=category,
+        )
+        messages.success(request, "Service ajouté avec succès !")
+        return redirect("marketplace")
+
+    return render(request, "service.html")
+
+
 #Fonction qui affiche toutes les services
 @login_required(login_url='connexion')
 def marketplace_view(request):
@@ -207,47 +248,177 @@ def gaming_view(request):
     solo_games = GameUpload.objects.filter(game_mode='solo').order_by('-date_posted')
     multiplayer_games = GameUpload.objects.filter(game_mode='multiplayer').order_by('-date_posted')
 
+
     context = {
         'clips': clips,
         'solo_games': solo_games,
         'multiplayer_games': multiplayer_games,
+
     }
     return render(request, 'gaming.html', context)
 
 
 
 #Fonction qui permet à un devoppeur de charger son projet en zip après developpemt
-@login_required(login_url='connexion')
+@login_required
 def upload_game(request):
-    if request.method == 'POST':
-        form = GameUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            game = form.save(commit=False)
-            game.developer = request.user
+    if request.method == "POST":
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        game_file = request.FILES.get('game_file')
+        cover_image = request.FILES.get('cover_image')
+        mode = request.POST.get('game_mode')
+
+        if title and game_file:
+            game = GameUpload.objects.create(
+                title=title,
+                description=description,
+                developer=request.user,
+                game_file=game_file,
+                thumbnail=cover_image,
+                game_mode=mode
+            )
+
+            # Création du dossier temp s'il n'existe pas
+            temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp')
+            if not os.path.exists(temp_dir):
+                os.makedirs(temp_dir)
+
+            # Sauvegarde du fichier ZIP temporairement dans le dossier MEDIA
+            temp_zip_path = os.path.join(temp_dir, game_file.name)
+            with open(temp_zip_path, 'wb+') as destination:
+                for chunk in game_file.chunks():
+                    destination.write(chunk)
+
+            # Extraction du fichier ZIP
+            try:
+                extract_zip(game.id, temp_zip_path)
+                os.remove(temp_zip_path)  # Supprimer le fichier ZIP temporaire après extraction
+                messages.success(request, "Votre jeu a été uploadé et extrait avec succès. Vous pouvez maintenant le publier.")
+            except ValueError as e:
+                messages.error(request, f"Erreur lors de l'extraction du jeu : {str(e)}")
+                game.delete()  # Supprimer le jeu en cas d'erreur
+
+            return redirect('my_games')
+        else:
+            messages.error(request, "Veuillez remplir tous les champs obligatoires.")
+
+    return render(request, "upload_game.html")
+
+
+
+@login_required
+def publish_game(request, game_id):
+    game = get_object_or_404(GameUpload, id=game_id, developer=request.user)
+
+    if not game.is_published:
+        # Extraction dynamique
+        extract_path = extract_zip(game.id, game.game_file.path)
+
+        if extract_path:
+            game.is_published = True
             game.save()
-            return redirect('game-detail', game_id=game.id)
+            messages.success(request, "Votre jeu a été publié avec succès.")
+        else:
+            messages.error(request, "Erreur lors de l'extraction du jeu.")
     else:
-        form = gameUploadForm()
-    return render(request, 'games/upload.html', {'form': form})
+        messages.warning(request, "Ce jeu est déjà publié.")
 
-#Fonction qui verifie le type de fichier fourni
-@login_required(login_url='connexion')
-def clean_game_file(self):
-    game_file = self.cleaned_data.get('game_file')
-    if game_file:
-        if not game_file.name.endswith(('.zip', '.exe', '.apk')):
-                raise forms.ValidationError("Le fichier doit être un .zip, .exe, .apk")
-    return game_file
+    return redirect('my_games')
 
 
-#Fonction qui affiche les détail du jeux
-@login_required(login_url='connexion')
-def game_detail(request, game_id):
-    game = GameUpload.objects.get(id=game_id)
-    game.views += 1
-    game.save()
-    return render(request, 'games/detail.html', {'game': game})
 
+@login_required
+def my_games(request):
+    games = GameUpload.objects.filter(developer=request.user)
+    return render(request, 'games_list.html', {'games': games})
+
+
+
+def extract_zip(game_id, zip_file_path):
+    # Chemin où les fichiers extraits seront stockés
+    extract_path = os.path.join(settings.MEDIA_ROOT, 'games', str(game_id))
+
+    # Créer le dossier si nécessaire
+    if not os.path.exists(extract_path):
+        os.makedirs(extract_path)
+
+    # Extraire le fichier ZIP
+    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_path)
+
+    # Vérifier si index.html existe dans le dossier extrait
+    if not os.path.exists(os.path.join(extract_path, 'index.html')):
+        raise ValueError("Le fichier ZIP ne contient pas un fichier index.html.")
+
+    return extract_path
+
+@login_required
+def play_game(request, game_id):
+    game = get_object_or_404(GameUpload, id=game_id, is_published=True)
+
+    # Utilise un chemin compatible URL
+    #game_path = f"/media/games/{game_id}/index.html"
+    game_path = urljoin('/media/', f'games/{game_id}/index.html')
+
+    print(f"Chemin du jeu généré dans la vue : {game_path}")  # Pour voir l'URL générée dans la console
+
+    return render(request, 'play_game.html', {'game_url': game_path, 'game': game})
+
+
+def convert_to_embed_url(url):
+    """
+    Convertir automatiquement toute URL de vidéo en format embed (YouTube, Vimeo, Dailymotion).
+    """
+    # Conversion pour YouTube
+    youtube_regex = r"(https?://)?(www\.)?(youtube|youtu|youtube-nocookie)\.(com|be)/(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})"
+    match_youtube = re.match(youtube_regex, url)
+    if match_youtube:
+        video_id = match_youtube.group(6)
+        return f"https://www.youtube.com/embed/{video_id}"
+
+    # Conversion pour Vimeo
+    vimeo_regex = r"https?://(www\.)?vimeo.com/(\d+)"
+    match_vimeo = re.match(vimeo_regex, url)
+    if match_vimeo:
+        video_id = match_vimeo.group(2)
+        return f"https://player.vimeo.com/video/{video_id}"
+
+    # Conversion pour Dailymotion
+    dailymotion_regex = r"https?://(www\.)?dailymotion.com/video/([a-zA-Z0-9]+)"
+    match_dailymotion = re.match(dailymotion_regex, url)
+    if match_dailymotion:
+        video_id = match_dailymotion.group(2)
+        return f"https://www.dailymotion.com/embed/video/{video_id}"
+
+    # Si ce n'est pas une URL connue, on laisse inchangé
+    return url
+@login_required
+def upload_clipGame(request):
+    if request.method == "POST":
+        user = request.user
+        title = request.POST.get('clip_title')
+        game = request.POST.get('game')
+        video_url = request.POST.get('clip_video')
+
+        # Convertir l'URL YouTube en format embed si c'est une URL YouTube
+        if video_url:
+            video_url = convert_to_embed_url(video_url)
+
+
+        if title and video_url:
+            clip = GamingClip.objects.create(
+                user=user,
+                title=title,
+                game=game,
+                video_url=video_url,
+            )
+            messages.success(request, "Fichier uploader avec succès !")
+            return redirect('gaming')  # Redirige vers la page d'accueil après login
+        else:
+            messages.error(request, "Erreur dans le formulaire. Veuillez vérifier vos informations.")
+
+    return render(request, 'clipModal.html')
 
 #Fonction qui gère note bot via GPT-4
 @login_required(login_url='connexion')
@@ -315,7 +486,7 @@ def unread_notifications_count(request):
 
 def mark_notifications_as_read(request):
     if request.user.is_authenticated:
-        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        Notification.objects.filter(user=request.user, seen=False).update(seen=True)
         return JsonResponse({'status': 'ok'})
     return JsonResponse({'status': 'unauthorized'}, status=401)
 
@@ -329,7 +500,7 @@ def get_notifications(request):
                 'message': n.message,
                 'post_id': n.post.id if n.post else None,
                 'created_at': n.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                'is_read': n.seen,
+                'seen': n.seen,
             }
             for n in notifications
         ]
@@ -393,4 +564,4 @@ def custom_logout(request):
     logout(request)
     return redirect('connexion')
 
-#
+

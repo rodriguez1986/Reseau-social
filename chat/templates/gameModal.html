@@ -5,38 +5,35 @@
 
     <h2 class="text-2xl font-bold mb-6 text-blue-600 text-center">Publier un Jeu</h2>
 
-    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+    <form action="{% url 'upload_game' %}" method="POST" enctype="multipart/form-data" class="space-y-4">
       {% csrf_token %}
 
       <div>
         <label class="block font-medium">Titre du jeu</label>
-        <input type="text" name="title" class="w-full p-2 border rounded" placeholder="Ex: Battle Arena">
+        <input type="text" name="title" class="w-full p-2 border rounded" placeholder="Ex: Battle Arena" required>
       </div>
 
       <div>
         <label class="block font-medium">Description</label>
-        <textarea name="description" rows="1" class="w-full p-2 border rounded" placeholder="Décrivez votre jeu..."></textarea>
+        <textarea name="description" rows="2" class="w-full p-2 border rounded" placeholder="Décrivez votre jeu..." required></textarea>
       </div>
 
       <div>
         <label class="block font-medium">Mode de jeu</label>
-        <select name="mode" class="w-full p-2 border rounded">
-          <option value="">-- Sélectionner un mode --</option>
-          <option value="solo">Solo</option>
-          <option value="multijoueur">Multijoueur</option>
-          <option value="coop">Coopératif</option>
-          <option value="battle_royale">Battle Royale</option>
+        <select name="game_mode" class="w-full p-2 border rounded" required>
+          <option value="solo">Jeu Solo</option>
+          <option value="multiplayer">Jeu Multijoueur</option>
         </select>
       </div>
 
       <div>
-        <label class="block font-medium">Image du jeu</label>
-        <input type="file" name="cover_image" class="w-full">
+        <label class="block font-medium">Image de couverture (optionnel)</label>
+        <input type="file" name="thumbnail" class="w-full" accept="image/*">
       </div>
 
       <div>
-        <label class="block font-medium">Fichier du jeu</label>
-        <input type="file" name="game_file" class="w-full">
+        <label class="block font-medium">Fichier du jeu (ZIP ou EXE)</label>
+        <input type="file" name="game_file" class="w-full" accept=".zip,.exe" required>
       </div>
 
       <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded">

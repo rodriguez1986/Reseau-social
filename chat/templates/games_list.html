@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% include '_nav.html' %}
+ <main class="ml-[270px]  mr-[240px] p-4 w-full max-w-2xl mx-auto">
+<h2>Mes Jeux</h2>
+
+{% for game in games %}
+  <div class="game-card">
+    <h3>{{ game.title }}</h3>
+    <p>{{ game.description }}</p>
+
+    {% if game.thumbnail %}
+      <img src="{{ game.thumbnail.url }}" alt="Thumbnail" class="w-32 h-32">
+    {% endif %}
+
+    <p>Mode: {{ game.get_game_mode_display }}</p>
+    <p>Status: {{ game.is_published|yesno:"Publié,Non publié" }}</p>
+
+    {% if not game.is_published %}
+      <form action="{% url 'publish_game' game.id %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Publier</button>
+      </form>
+    {% else %}
+      <p class="text-green-500 font-semibold">Votre jeu est publié.</p>
+    {% endif %}
+  </div>
+{% endfor %}
+ </main>
+</body>
+</html>

@@ -25,7 +25,14 @@ SECRET_KEY = 'django-insecure-#p#@x_8)9@y-q)&&*x*j)b^i21buanxfy0b_hrk*f6up66+9x@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+# settings.py
+
+SECURE_CONTENT_TYPE_NOSNIFF = False
+SECURE_BROWSER_XSS_FILTER = False
+CSP_FRAME_ANCESTORS = "http://127.0.0.1:8000"
+
 
 import os
 # Application definition

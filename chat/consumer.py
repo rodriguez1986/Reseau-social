@@ -128,14 +128,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         Message.objects.create(sender=sender, receiver=receiver, content=content)
 
 
-
-
     async def user_status(self, event):
         await self.send(text_data=json.dumps({
             'type': 'user-status-update',
             'username': event['username'],
             'status': event['status']
         }))
+
 
 class StatusConsumer(AsyncWebsocketConsumer):
     async def connect(self):

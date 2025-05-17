@@ -81,7 +81,7 @@ class Service(models.Model):
 class GamingClip(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='post_gaming')
     title = models.CharField(max_length=100)
-    video_url = models.URLField()
+    video_url = models.URLField(max_length=500, blank=False, null=False)
     game = models.CharField(max_length=100)
     posted_at = models.DateTimeField(auto_now_add=True)
 
@@ -89,6 +89,8 @@ class GamingClip(models.Model):
         return self.title
 
 #Upload du jeu par le deveppeur
+# models.py
+
 class GameUpload(models.Model):
     GAME_MODE_CHOICES = [
         ('solo', 'Jeu Solo'),
@@ -96,7 +98,7 @@ class GameUpload(models.Model):
     ]
     title = models.CharField(max_length=200)
     description = models.TextField()
-    developer = models.ForeignKey(CustomUser, on_delete=models.CASCADE,related_name='upload_game')
+    developer = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='upload_game')
     game_file = models.FileField(upload_to="uploaded_games/")
     thumbnail = models.ImageField(upload_to="thumbnails/", blank=True, null=True)
     views = models.PositiveIntegerField(default=0)
@@ -104,6 +106,8 @@ class GameUpload(models.Model):
     likes = models.PositiveIntegerField(default=0)
     game_mode = models.CharField(max_length=20, choices=GAME_MODE_CHOICES, default='solo')
     date_posted = models.DateTimeField(auto_now_add=True)
+    is_published = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
+

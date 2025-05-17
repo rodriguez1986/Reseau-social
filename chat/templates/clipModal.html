@@ -12,7 +12,7 @@
 
     <h2 class="text-2xl font-bold mb-6 text-green-600 text-center">Publier un Clip</h2>
 
-    <form method="POST" enctype="multipart/form-data" class="space-y-4">
+    <form method="POST" action="{% url 'upload_clipGame' %}"  enctype="multipart/form-data" class="space-y-4">
       {% csrf_token %}
       <div>
         <label class="block font-medium">Titre du clip</label>
@@ -20,13 +20,13 @@
       </div>
 
       <div>
-        <label class="block font-medium">Description</label>
-        <textarea name="clip_description" rows="4" class="w-full p-2 border rounded" placeholder="Racontez ce moment..."></textarea>
+        <label class="block font-medium">Game</label>
+        <input type="text" name="game" class="w-full p-2 border rounded" placeholder="Ex: jeu d'/enfant">
       </div>
 
       <div>
         <label class="block font-medium">Vidéo du clip</label>
-        <input type="file" name="clip_video" accept="video/*" class="w-full">
+        <input type="url" name="clip_video" accept="video/*" class="w-full">
       </div>
 
       <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded">

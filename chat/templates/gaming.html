@@ -1,6 +1,6 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <title>Clips de Jeu</title>
@@ -9,110 +9,104 @@
 </head>
 <body class="bg-gray-50">
 {% include '_nav.html' %}
- <!-- Conteneur principal centré -->
-<main class="ml-[260px]  mr-[240px] p-4 w-full max-w-2xl mx-auto mt-10">
-<h1 class="text-3xl font-bold mb-6 mt-6">Gaming Zone 🎮</h1>
 
-<!-- Clips de jeux -->
-<section class="mb-10">
-  <h2 class="text-2xl font-semibold mb-4">Clips de Gameplay 🎥</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for clip in clips %}
-      <div class="border rounded-lg p-4 shadow hover:shadow-lg">
-        <h3 class="font-bold text-lg mb-2">{{ clip.title }}</h3>
-        <iframe src="{{ clip.video_url }}" class="w-full h-48 rounded" allowfullscreen></iframe>
-        <p class="text-gray-600 mt-2 text-sm">Jeu : {{ clip.game }}</p>
-        <p class="text-gray-400 text-xs">Posté le {{ clip.posted_at|date:"d M Y" }}</p>
-      </div>
-    {% empty %}
-      <p>Aucun clip trouvé.</p>
-    {% endfor %}
-  </div>
-</section>
+<!-- Conteneur principal centré -->
+<main class="ml-[260px] mr-[240px] p-4 w-full max-w-2xl mx-auto mt-10">
+    <h1 class="text-3xl font-bold mb-6 mt-6">Gaming Zone 🎮</h1>
 
-<!-- Jeux Multijoueurs -->
-<section class="mb-10">
-  <h2 class="text-2xl font-semibold mb-4">Jeux Multijoueur 🧑‍🤝‍🧑</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for game in multiplayer_games %}
-      <div class="border rounded-lg p-4 shadow hover:shadow-lg">
-        {% if game.thumbnail %}
-          <img src="{{ game.thumbnail.url }}" class="w-full h-40 object-cover rounded mb-2">
-        {% endif %}
-        <h3 class="font-bold text-lg mb-2">{{ game.title }}</h3>
-        <p class="text-gray-600 text-sm mb-2">{{ game.description|truncatewords:20 }}</p>
-        <p class="text-sm text-gray-400">Développeur : {{ game.developer.username }}</p>
-        <a href="{{ game.game_file.url }}" class="mt-2 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Télécharger</a>
-      </div>
-    {% empty %}
-      <p>Aucun jeu multijoueur disponible.</p>
-    {% endfor %}
-  </div>
-</section>
+    <!-- Clips de jeux -->
+    <section class="mb-10">
+        <h2 class="text-2xl font-semibold mb-4">Clips de Gameplay 🎥</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for clip in clips %}
+            <div class="border rounded-lg p-4 shadow hover:shadow-lg">
+                <h3 class="font-bold text-lg mb-2">{{ clip.title }}</h3>
+                <iframe src="{{ clip.video_url }}" class="w-full h-48 rounded" allowfullscreen></iframe>
+                <p class="text-gray-600 mt-2 text-sm">Jeu : {{ clip.game }}</p>
+                <p class="text-gray-400 text-xs">Posté le {{ clip.posted_at|date:"d M Y" }}</p>
+            </div>
+            {% empty %}
+            <p>Aucun clip trouvé.</p>
+            {% endfor %}
+        </div>
+    </section>
 
-<!-- Jeux Solo -->
-<section>
-  <h2 class="text-2xl font-semibold mb-4">Jeux Solo 🎮</h2>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for game in solo_games %}
-      <div class="border rounded-lg p-4 shadow hover:shadow-lg">
-        {% if game.thumbnail %}
-          <img src="{{ game.thumbnail.url }}" class="w-full h-40 object-cover rounded mb-2">
-        {% endif %}
-        <h3 class="font-bold text-lg mb-2">{{ game.title }}</h3>
-        <p class="text-gray-600 text-sm mb-2">{{ game.description|truncatewords:20 }}</p>
-        <p class="text-sm text-gray-400">Développeur : {{ game.developer.username }}</p>
-        <a href="{{ game.game_file.url }}" class="mt-2 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Télécharger</a>
-      </div>
-    {% empty %}
-      <p>Aucun jeu solo disponible.</p>
-    {% endfor %}
-  </div>
-</section>
+    <!-- Jeux Multijoueurs -->
+    <section class="mb-10">
+        <h2 class="text-2xl font-semibold mb-4">Jeux Multijoueur 🧑‍🤝‍🧑</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for game in multiplayer_games %}
+            <div class="border rounded-lg p-4 shadow hover:shadow-lg">
+                {% if game.thumbnail %}
+                <img src="{{ game.thumbnail.url }}" class="w-full h-40 object-cover rounded mb-2">
+                {% endif %}
+                <h3 class="font-bold text-lg mb-2">{{ game.title }}</h3>
+                <p class="text-gray-600 text-sm mb-2">{{ game.description|truncatewords:20 }}</p>
+                <p class="text-sm text-gray-400">Développeur : {{ game.developer.username }}</p>
+                <button onclick="openPGameModal('{{ game.id }}')" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Jouer</button>
+            </div>
+            {% empty %}
+            <p>Aucun jeu multijoueur disponible.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Jeux Solo -->
+    <section>
+        <h2 class="text-2xl font-semibold mb-4">Jeux Solo 🎮</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for game in solo_games %}
+            <div class="border rounded-lg p-4 shadow hover:shadow-lg">
+                {% if game.thumbnail %}
+                <img src="{{ game.thumbnail.url }}" class="w-full h-40 object-cover rounded mb-2">
+                {% endif %}
+                <h3 class="font-bold text-lg mb-2">{{ game.title }}</h3>
+                <p class="text-gray-600 text-sm mb-2">{{ game.description|truncatewords:20 }}</p>
+                <p class="text-sm text-gray-400">Développeur : {{ game.developer.username }}</p>
+                <button onclick="alert('Button clicked')" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Jouer</button>
+            </div>
+            {% empty %}
+            <p>Aucun jeu solo disponible.</p>
+            {% endfor %}
+        </div>
+    </section>
 </main>
+
+<!-- Modal pour jouer -->
+<div id="playGameModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl relative mx-auto">
+        <button onclick="closePlayGameModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
+        <div id="modalContent" class="w-full h-[500px]"></div>
+    </div>
+</div>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const modal = document.querySelector("#playGameModal");
+        if (!modal.classList.contains("hidden")) {
+            console.error("Le modal est affiché par défaut !");
+        } else {
+            console.log("Le modal est bien caché au chargement.");
+        }
+    });
+
+    function openPGameModal(game_id) {
+    console.log("openPGameModal a été appelé !");
+    fetch(`/play_game/${game_id}/`)
+        .then(response => response.text())
+        .then(html => {
+            document.querySelector("#playGameModal").innerHTML = html;
+            document.querySelector("#playGameModal").classList.remove("hidden");
+        });
+}
+
+function closePlayGameModal() {
+    console.log("closePlayGameModal a été appelé !");
+    document.querySelector("#playGameModal").classList.add("hidden");
+    document.querySelector("#playGameModal").innerHTML = ''; // Vider le contenu pour éviter les conflits
+}
+
+</script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
