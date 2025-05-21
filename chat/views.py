@@ -358,12 +358,11 @@ def play_game(request, game_id):
     game = get_object_or_404(GameUpload, id=game_id, is_published=True)
 
     # Utilise un chemin compatible URL
-    #game_path = f"/media/games/{game_id}/index.html"
-    game_path = urljoin('/media/', f'games/{game_id}/index.html')
+    #game_path = urljoin('/media/', f'games/{game_id}/index.html')
 
     print(f"Chemin du jeu généré dans la vue : {game_path}")  # Pour voir l'URL générée dans la console
 
-    return render(request, 'play_game.html', {'game_url': game_path, 'game': game})
+    return render(request, 'play_game.html', {'game_url': game_id, 'game': game})
 
 
 def convert_to_embed_url(url):

@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu de Tir 2D</title>
+    <style>
+        body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #000; }
+        canvas { background-color: #222; border: 2px solid white; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let player = { x: canvas.width / 2, y: canvas.height - 50, width: 50, height: 50, speed: 5 };
+        let projectiles = [];
+        let enemies = [];
+        let enemySpeed = 2;
+        let gameOver = false;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' && player.x > 0) player.x -= player.speed;
+            if (e.key === 'ArrowRight' && player.x < canvas.width - player.width) player.x += player.speed;
+            if (e.key === ' ') {
+                projectiles.push({ x: player.x + player.width / 2 - 5, y: player.y, width: 10, height: 20, speed: 5 });
+            }
+        });
+
+        function spawnEnemy() {
+            let enemyX = Math.random() * (canvas.width - 50);
+            enemies.push({ x: enemyX, y: 0, width: 50, height: 50 });
+        }
+
+        function update() {
+            if (gameOver) {
+                ctx.fillStyle = 'white';
+                ctx.font = '30px Arial';
+                ctx.fillText('Game Over', canvas.width / 2 - 75, canvas.height / 2);
+                return;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Player
+            ctx.fillStyle = 'blue';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            // Projectiles
+            projectiles.forEach((proj, index) => {
+                proj.y -= proj.speed;
+                ctx.fillStyle = 'red';
+                ctx.fillRect(proj.x, proj.y, proj.width, proj.height);
+                if (proj.y < 0) projectiles.splice(index, 1);
+            });
+
+            // Enemies
+            enemies.forEach((enemy, index) => {
+                enemy.y += enemySpeed;
+                ctx.fillStyle = 'green';
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+
+                // Collision with projectiles
+                projectiles.forEach((proj, pIndex) => {
+                    if (proj.x < enemy.x + enemy.width && proj.x + proj.width > enemy.x &&
+                        proj.y < enemy.y + enemy.height && proj.y + proj.height > enemy.y) {
+                        enemies.splice(index, 1);
+                        projectiles.splice(pIndex, 1);
+                    }
+                });
+
+                // Check if enemy reaches the bottom
+                if (enemy.y + enemy.height > canvas.height) {
+                    gameOver = true;
+                }
+            });
+
+            requestAnimationFrame(update);
+        }
+
+        setInterval(spawnEnemy, 2000);
+        update();
+    </script>
+</body>
+</html>

@@ -289,7 +289,6 @@ function closeNotificationModal() {
 function openNotificationModal() {
     const modal = document.getElementById("notificationModal");
     modal.classList.remove("hidden");
-
     fetch('/load_notifications/')
         .then(response => response.json())
         .then(data => {
@@ -467,7 +466,7 @@ function updateCommentCount(count, postId) {
   }
 }
 
-//Gestion des likes
+//---------------------------Gestion des likes-------------------------------------------------
 //const postId = ...;  // L’ID du post actuel
 const likeSocket = new WebSocket(`ws://${window.location.host}/ws/likes/${postId}/`);
 
@@ -519,18 +518,34 @@ document.getElementById("serviceModal").classList.add("hidden");
 }
 
 
-function openPGameModal(game_id) {
-    fetch(`/play_game/${game_id}/`)
-        .then(response => response.text())
-        .then(html => {
-            document.querySelector("#playGameModal").innerHTML = html;
-            document.querySelector("#playGameModal").classList.remove("hidden");
-        });
+function openPGameModal(gameId) {
+  const modal = document.getElementById("playGameModal");
+  const content = document.getElementById("playGameContent");
+
+  // Nettoyer le contenu précédent
+  content.innerHTML = "";
+
+  // Créer l'iframe dynamiquement
+  const iframe = document.createElement("iframe");
+  iframe.src = '/media/games/'+gameId+'/index.html'; // Assure-toi que cette URL affiche directement le jeu
+  iframe.className = "w-full h-96 rounded";
+  iframe.frameBorder = "0";
+  iframe.allowFullscreen = true;
+
+  // Ajouter l'iframe au contenu
+  content.appendChild(iframe);
+
+  // Afficher la modale
+  modal.classList.remove("hidden");
+  modal.style.display = "flex";
 }
 
 function closePlayGameModal() {
-    document.querySelector("#playGameModal").classList.add("hidden");
-    document.querySelector("#playGameModal").innerHTML = ''; // Vider le contenu pour éviter les conflits
-}
+  const modal = document.getElementById("playGameModal");
+  const content = document.getElementById("playGameContent");
 
+  modal.classList.add("hidden");
+  modal.style.display = "none";
+  content.innerHTML = ""; // Nettoyage
+}
 

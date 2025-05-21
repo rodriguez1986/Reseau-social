@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
-{% load static %}
+
 <head>
     <meta charset="UTF-8">
     <title>Clips de Jeu</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
 </head>
 <body class="bg-gray-50">
 {% include '_nav.html' %}
@@ -63,50 +65,18 @@
                 <h3 class="font-bold text-lg mb-2">{{ game.title }}</h3>
                 <p class="text-gray-600 text-sm mb-2">{{ game.description|truncatewords:20 }}</p>
                 <p class="text-sm text-gray-400">Développeur : {{ game.developer.username }}</p>
-                <button onclick="alert('Button clicked')" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Jouer</button>
+                <button onclick="openPGameModal('{{ game.id }}')" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">Jouer</button>
             </div>
             {% empty %}
             <p>Aucun jeu solo disponible.</p>
             {% endfor %}
+
         </div>
     </section>
+
 </main>
-
-<!-- Modal pour jouer -->
-<div id="playGameModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl relative mx-auto">
-        <button onclick="closePlayGameModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">&times;</button>
-        <div id="modalContent" class="w-full h-[500px]"></div>
-    </div>
-</div>
-
-<script>
-
-    document.addEventListener("DOMContentLoaded", function() {
-        const modal = document.querySelector("#playGameModal");
-        if (!modal.classList.contains("hidden")) {
-            console.error("Le modal est affiché par défaut !");
-        } else {
-            console.log("Le modal est bien caché au chargement.");
-        }
-    });
-
-    function openPGameModal(game_id) {
-    console.log("openPGameModal a été appelé !");
-    fetch(`/play_game/${game_id}/`)
-        .then(response => response.text())
-        .then(html => {
-            document.querySelector("#playGameModal").innerHTML = html;
-            document.querySelector("#playGameModal").classList.remove("hidden");
-        });
-}
-
-function closePlayGameModal() {
-    console.log("closePlayGameModal a été appelé !");
-    document.querySelector("#playGameModal").classList.add("hidden");
-    document.querySelector("#playGameModal").innerHTML = ''; // Vider le contenu pour éviter les conflits
-}
-
-</script>
 </body>
 </html>
+{% include 'play_game.html' %}
+<script src="{% static 'js/script.js' %}" defer></script>
+

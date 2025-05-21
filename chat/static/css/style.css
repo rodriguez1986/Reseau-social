@@ -5,6 +5,3 @@
   overflow-y: auto;   /* Scroll vertical uniquement */
   padding-right: 10px; /* Un peu d'espace pour ne pas coller le bord */
 }
-#playGameModal {
-    display: block !important;  /* Assure-toi que c'est bien visible */
-}
